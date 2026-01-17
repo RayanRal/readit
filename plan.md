@@ -40,3 +40,20 @@
 - **Phase 3:** Frontend UI development (including **Login/Register**) & Integration.
 - **Phase 4:** Deployment to Vercel.
 - **Phase 5 (Future):** Content scraping & Mobile client.
+
+## 7. Chrome Extension Implementation
+**Goal:** Allow users to save the current active tab to Readit directly from the browser.
+
+### Structure (`/extension`)
+- **Manifest V3**: Using `activeTab` permission.
+- **Popup**: Minimalist UI with "Save" button and Auth status check.
+- **Communication**: Direct `fetch` calls to `http://localhost:3000/api/v1/links` (Dev) or Production URL.
+
+### Technical Strategy
+- **CORS**: Configure `next.config.ts` to allow requests from the extension (`chrome-extension://...`).
+- **Auth**: Leverage existing Supabase cookies. The extension will send requests with `credentials: 'include'`.
+- **Workflow**:
+    1.  Open Popup -> Check `GET /api/v1/links` (Are we logged in?).
+    2.  If 401 -> Show "Login" button (opens Web App).
+    3.  If 200 -> Show Title/URL + "Save" button.
+    4.  Save -> `POST /api/v1/links`.

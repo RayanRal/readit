@@ -1,0 +1,17 @@
+{
+  "manifest_version": 3,
+  "name": "Readit Saver",
+  "version": "1.0",
+  "description": "Save current tab to Readit",
+  "permissions": [
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": [
+    "http://localhost:3000/*",
+    "https://readit-vercel.vercel.app/*"
+  ],
+  "action": {
+    "default_popup": "popup.html"
+  }
+}

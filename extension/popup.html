@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Save to Readit</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <div id="loading" class="screen">
+      <div class="spinner"></div>
+    </div>
+
+    <div id="login" class="screen hidden">
+      <h2>Readit</h2>
+      <p>Please login to save links.</p>
+      <button id="login-btn" class="btn primary">Open Readit</button>
+    </div>
+
+    <div id="save" class="screen hidden">
+      <div class="preview">
+        <h3 id="page-title">Loading...</h3>
+        <p id="page-url">...</p>
+      </div>
+      <button id="save-btn" class="btn primary">Save Link</button>
+      <p id="error-msg" class="error hidden"></p>
+    </div>
+
+    <div id="success" class="screen hidden">
+      <div class="icon-check">✓</div>
+      <p>Saved!</p>
+    </div>
+  </div>
+  <script src="config.js"></script>
+  <script src="popup.js"></script>
+</body>
+</html>
