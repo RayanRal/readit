@@ -1,0 +1,58 @@
+#!/bin/sh
+
+# Colors
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+NC='\033[0m' # No Color
+
+echo "🔍  Running pre-commit security check..."
+
+# Define forbidden patterns (regex)
+# 1. Private Keys
+# 2. Supabase Service Role Key (should never be client-side)
+# 3. Connection strings (postgres, mongodb, etc)
+# 4. Standard API Key patterns (Stripe, GitHub, AWS)
+PATTERNS="BEGIN RSA PRIVATE KEY|SUPABASE_SERVICE_ROLE_KEY|postgres:\/\/|mongodb:\/\/|sk_live_[0-9a-zA-Z]{24}|ghp_[0-9a-zA-Z]{36}|AWS_ACCESS_KEY_ID"
+
+# Get list of staged files (excluding deletions)
+# We use --diff-filter=ACM to only check Added, Copied, or Modified files
+staged_files=$(git diff --cached --name-only --diff-filter=ACM)
+
+if [ -z "$staged_files" ]; then
+    exit 0
+fi
+
+# Flag to track if we found issues
+found_issues=0
+
+# Loop through files (handling spaces in filenames slightly better, 
+# though git hooks in basic sh often struggle with exotic filenames without complex loops)
+# For simplicity in this shell script, we iterate over the list provided by git.
+for file in $staged_files; do
+    # Skip check if file doesn't exist (shouldn't happen with cached diff but good practice)
+    if [ ! -f "$file" ]; then
+        continue
+    fi
+
+    # Grep for patterns
+    # -H: Print filename
+    # -n: Print line number
+    # -I: Ignore binary files
+    match=$(grep -E -H -n -I "$PATTERNS" "$file")
+
+    if [ ! -z "$match" ]; then
+        echo "${RED}FAILED:${NC} Potential secret found in $file"
+        echo "$match"
+        found_issues=1
+    fi
+done
+
+if [ $found_issues -eq 1 ]; then
+    echo ""
+    echo "${RED}❌  Commit blocked because potential secrets were found.${NC}"
+    echo "Please remove the secrets or edit .git/hooks/pre-commit if this is a false positive."
+    exit 1
+else
+    echo "${GREEN}✅  Security check passed.${NC}"
+    exit 0
+fi
