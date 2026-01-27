@@ -15,13 +15,13 @@ alter table public.links enable row level security;
 
 -- Create policies
 create policy "Users can view their own links" on public.links
-  for select using (auth.uid() = user_id);
+  for select using ((select auth.uid()) = user_id);
 
 create policy "Users can insert their own links" on public.links
-  for insert with check (auth.uid() = user_id);
+  for insert with check ((select auth.uid()) = user_id);
 
 create policy "Users can update their own links" on public.links
-  for update using (auth.uid() = user_id);
+  for update using ((select auth.uid()) = user_id);
 
 create policy "Users can delete their own links" on public.links
-  for delete using (auth.uid() = user_id);
+  for delete using ((select auth.uid()) = user_id);
