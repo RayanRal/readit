@@ -2,4 +2,4 @@
 
 Remember Pocket?
 
-**Live Demo:** [https://readit-vercel.vercel.app/](https://readit-vercel.vercel.app/)
+**Probably runs on:** [https://readit-lc.vercel.app/](https://readit-lc.vercel.app/)
