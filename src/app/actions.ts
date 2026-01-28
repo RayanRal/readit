@@ -3,6 +3,7 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
+import { fetchTitle } from '@/utils/fetchTitle'
 
 export async function signOut() {
   const supabase = await createClient()
@@ -18,8 +19,11 @@ export async function addLink(formData: FormData) {
       return
   }
 
+  const title = await fetchTitle(url);
+
   const { error } = await supabase.from('links').insert({
     url,
+    title,
     user_id: (await supabase.auth.getUser()).data.user?.id,
   })
 
