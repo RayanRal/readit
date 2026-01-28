@@ -64,3 +64,42 @@ export async function markAsRead(formData: FormData) {
   
     revalidatePath('/')
 }
+
+export async function addCategory(formData: FormData) {
+  const supabase = await createClient()
+  const name = formData.get('name') as string
+  const color = formData.get('color') as string || '#6366f1' // Default color
+
+  if (!name) return
+
+  const { error } = await supabase.from('categories').insert({
+    name,
+    color,
+    user_id: (await supabase.auth.getUser()).data.user?.id,
+  })
+
+  if (error) {
+    console.error('Error adding category:', error)
+  }
+
+  revalidatePath('/')
+}
+
+export async function updateLinkCategory(formData: FormData) {
+  const supabase = await createClient()
+  const linkId = formData.get('linkId') as string
+  const categoryId = formData.get('categoryId') as string
+  
+  // If categoryId is empty string, we might want to set it to null (remove category)
+  const catId = categoryId === '' ? null : categoryId;
+
+  if (!linkId) return
+
+  const { error } = await supabase.from('links').update({ category_id: catId }).eq('id', linkId)
+
+  if (error) {
+    console.error('Error updating link category:', error)
+  }
+
+  revalidatePath('/')
+}
