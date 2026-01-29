@@ -4,7 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '../utils/supabase/server'
 import { fetchTitle } from '../utils/fetchTitle'
-import { CATEGORY_COLORS } from '../utils/colors'
+import { CATEGORY_COLORS } from '../utils/category-colors'
 
 export async function signOut() {
   const supabase = await createClient()
