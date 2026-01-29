@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { addCategory, updateLinkCategory } from './actions';
-import { CATEGORY_COLORS } from '@/utils/colors';
+import { CATEGORY_COLORS } from '../utils/colors';
 
 // Use vi.hoisted to ensure mocks are available before vi.mock execution
 const { mockInsert, mockUpdate, mockEq, mockFrom, mockAuthGetUser } = vi.hoisted(() => {
@@ -20,7 +20,7 @@ const mockSupabase = {
   },
 };
 
-vi.mock('@/utils/supabase/server', () => ({
+vi.mock('../utils/supabase/server', () => ({
   createClient: () => Promise.resolve(mockSupabase),
 }));
 
