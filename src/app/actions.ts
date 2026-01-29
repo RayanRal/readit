@@ -4,6 +4,7 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '@/utils/supabase/server'
 import { fetchTitle } from '@/utils/fetchTitle'
+import { CATEGORY_COLORS } from '@/utils/colors'
 
 export async function signOut() {
   const supabase = await createClient()
@@ -68,7 +69,7 @@ export async function markAsRead(formData: FormData) {
 export async function addCategory(formData: FormData) {
   const supabase = await createClient()
   const name = formData.get('name') as string
-  const color = formData.get('color') as string || '#6366f1' // Default color
+  const color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
 
   if (!name) return
 
@@ -80,6 +81,21 @@ export async function addCategory(formData: FormData) {
 
   if (error) {
     console.error('Error adding category:', error)
+  }
+
+  revalidatePath('/')
+}
+
+export async function deleteCategory(formData: FormData) {
+  const supabase = await createClient()
+  const id = formData.get('id') as string
+
+  if (!id) return
+
+  const { error } = await supabase.from('categories').delete().eq('id', id)
+
+  if (error) {
+    console.error('Error deleting category:', error)
   }
 
   revalidatePath('/')

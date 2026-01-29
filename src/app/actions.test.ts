@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { addCategory, updateLinkCategory } from './actions';
+import { CATEGORY_COLORS } from '@/utils/colors';
 
 // Use vi.hoisted to ensure mocks are available before vi.mock execution
 const { mockInsert, mockUpdate, mockEq, mockFrom, mockAuthGetUser } = vi.hoisted(() => {
@@ -57,32 +58,30 @@ describe('Server Actions', () => {
   });
 
   describe('addCategory', () => {
-    it('should insert a new category with provided name and color', async () => {
+    it('should insert a new category with a random color from CATEGORY_COLORS', async () => {
       const formData = new FormData();
       formData.append('name', 'Tech');
-      formData.append('color', '#ff0000');
 
       await addCategory(formData);
 
       expect(mockFrom).toHaveBeenCalledWith('categories');
-      expect(mockInsert).toHaveBeenCalledWith({
-        name: 'Tech',
-        color: '#ff0000',
-        user_id: 'user-123',
-      });
+      const calledWith = mockInsert.mock.calls[0][0];
+      expect(calledWith.name).toBe('Tech');
+      expect(CATEGORY_COLORS).toContain(calledWith.color);
+      expect(calledWith.user_id).toBe('user-123');
     });
 
-    it('should use default color if not provided', async () => {
+    it('should ignore provided color and use random color', async () => {
       const formData = new FormData();
       formData.append('name', 'Life');
-      // No color
+      formData.append('color', '#000000');
 
       await addCategory(formData);
 
-      expect(mockInsert).toHaveBeenCalledWith(expect.objectContaining({
-        name: 'Life',
-        color: '#6366f1',
-      }));
+      const calledWith = mockInsert.mock.calls[0][0];
+      expect(calledWith.name).toBe('Life');
+      expect(CATEGORY_COLORS).toContain(calledWith.color);
+      expect(calledWith.color).not.toBe('#000000');
     });
   });
 
