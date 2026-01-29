@@ -4,7 +4,21 @@ import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { createClient } from '../utils/supabase/server'
 import { fetchTitle } from '../utils/fetchTitle'
-import { CATEGORY_COLORS } from '../utils/category-colors'
+
+export async function getCategoryColors() {
+  return [
+    '#ef4444', // Red 500
+    '#f97316', // Orange 500
+    '#f59e0b', // Amber 500
+    '#10b981', // Emerald 500
+    '#06b6d4', // Cyan 500
+    '#3b82f6', // Blue 500
+    '#6366f1', // Indigo 500
+    '#8b5cf6', // Violet 500
+    '#d946ef', // Fuchsia 500
+    '#f43f5e', // Rose 500
+  ]
+}
 
 export async function signOut() {
   const supabase = await createClient()
@@ -69,7 +83,8 @@ export async function markAsRead(formData: FormData) {
 export async function addCategory(formData: FormData) {
   const supabase = await createClient()
   const name = formData.get('name') as string
-  const color = CATEGORY_COLORS[Math.floor(Math.random() * CATEGORY_COLORS.length)]
+  const colors = await getCategoryColors()
+  const color = colors[Math.floor(Math.random() * colors.length)]
 
   if (!name) return
 
