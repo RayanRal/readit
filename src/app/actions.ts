@@ -34,12 +34,28 @@ export async function addLink(formData: FormData) {
       return
   }
 
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+      return
+  }
+
+  const { data: existingLink } = await supabase
+      .from('links')
+      .select('id')
+      .eq('url', url)
+      .eq('user_id', user.id)
+      .single()
+
+  if (existingLink) {
+      return redirect('/?error=Such article already saved')
+  }
+
   const title = await fetchTitle(url);
 
   const { error } = await supabase.from('links').insert({
     url,
     title,
-    user_id: (await supabase.auth.getUser()).data.user?.id,
+    user_id: user.id,
   })
 
   if (error) {
@@ -83,15 +99,32 @@ export async function markAsRead(formData: FormData) {
 export async function addCategory(formData: FormData) {
   const supabase = await createClient()
   const name = formData.get('name') as string
-  const colors = await getCategoryColors()
-  const color = colors[Math.floor(Math.random() * colors.length)]
 
   if (!name) return
+
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) {
+      return
+  }
+
+  const { data: existingCategory } = await supabase
+      .from('categories')
+      .select('id')
+      .eq('name', name)
+      .eq('user_id', user.id)
+      .single()
+
+  if (existingCategory) {
+      return redirect('/?error=Such category already exists')
+  }
+
+  const colors = await getCategoryColors()
+  const color = colors[Math.floor(Math.random() * colors.length)]
 
   const { error } = await supabase.from('categories').insert({
     name,
     color,
-    user_id: (await supabase.auth.getUser()).data.user?.id,
+    user_id: user.id,
   })
 
   if (error) {

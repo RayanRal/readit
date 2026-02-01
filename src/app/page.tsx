@@ -2,6 +2,8 @@ import { createClient } from '@/utils/supabase/server'
 import { signOut, addLink, markAsRead, deleteLink, addCategory, deleteCategory } from './actions'
 import CategorySelector from '@/components/CategorySelector'
 import Link from 'next/link'
+import { ErrorMessage } from '@/components/ErrorMessage'
+import { Suspense } from 'react'
 
 export default async function Dashboard(props: {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>
@@ -38,6 +40,7 @@ export default async function Dashboard(props: {
 
   return (
     <div className="min-h-screen bg-gray-50">
+      <Suspense><ErrorMessage /></Suspense>
       <nav className="bg-white shadow-sm sticky top-0 z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between items-center">
@@ -89,7 +92,7 @@ export default async function Dashboard(props: {
                                         className="p-1 hover:text-red-600 text-gray-400 transition-colors"
                                         title="Delete Category"
                                     >
-                                        <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+                                        <svg xmlns="http://www.w3.org/2000/.svg" className="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
                                             <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                         </svg>
                                     </button>

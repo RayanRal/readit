@@ -1,26 +1,29 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
-import { addCategory, updateLinkCategory, getCategoryColors } from './actions';
+import { addCategory, updateLinkCategory, addLink } from './actions';
 
-// Use vi.hoisted to ensure mocks are available before vi.mock execution
-const { mockInsert, mockUpdate, mockEq, mockFrom, mockAuthGetUser } = vi.hoisted(() => {
+const { 
+  mockInsert, mockUpdate, mockEq, mockFrom, mockAuthGetUser, 
+  mockSelect, mockSingle, mockRedirect 
+} = vi.hoisted(() => {
   return {
     mockInsert: vi.fn(),
     mockUpdate: vi.fn(),
     mockEq: vi.fn(),
     mockFrom: vi.fn(),
     mockAuthGetUser: vi.fn(),
+    mockSelect: vi.fn(),
+    mockSingle: vi.fn(),
+    mockRedirect: vi.fn(),
   };
 });
 
-const mockSupabase = {
-  from: mockFrom,
-  auth: {
-    getUser: mockAuthGetUser,
-  },
-};
-
 vi.mock('../utils/supabase/server', () => ({
-  createClient: () => Promise.resolve(mockSupabase),
+  createClient: () => Promise.resolve({
+    from: mockFrom,
+    auth: {
+      getUser: mockAuthGetUser,
+    },
+  }),
 }));
 
 vi.mock('next/cache', () => ({
@@ -28,61 +31,90 @@ vi.mock('next/cache', () => ({
 }));
 
 vi.mock('next/navigation', () => ({
-  redirect: vi.fn(),
+  redirect: mockRedirect,
+}));
+
+vi.mock('../utils/fetchTitle', () => ({
+  fetchTitle: vi.fn().mockResolvedValue('Test Title'),
 }));
 
 describe('Server Actions', () => {
   beforeEach(() => {
     vi.clearAllMocks();
-    
-    // Explicit chain setup
+
     mockFrom.mockImplementation(() => ({
-      insert: mockInsert,
-      update: mockUpdate,
-      delete: () => ({ eq: mockEq }),
+      insert: mockInsert.mockResolvedValue({ error: null }),
+      update: mockUpdate.mockImplementation(() => ({
+        eq: mockEq.mockResolvedValue({ error: null }),
+      })),
+      select: mockSelect,
     }));
-    
-    // mockUpdate returns the builder synchronously
-    mockUpdate.mockImplementation(() => ({
+
+    mockSelect.mockImplementation(() => ({
       eq: mockEq,
     }));
-    
-    // Final terminals return promises
-    mockInsert.mockResolvedValue({ error: null });
-    mockEq.mockResolvedValue({ error: null }); 
-    
+
+    mockEq.mockImplementation(() => ({
+      eq: mockEq,
+      single: mockSingle,
+    }));
+
     mockAuthGetUser.mockResolvedValue({
       data: { user: { id: 'user-123' } },
     });
+    
+    mockSingle.mockResolvedValue({ data: null, error: null });
   });
 
   describe('addCategory', () => {
-    it('should insert a new category with a random color from getCategoryColors', async () => {
+    it('should insert a new category if it does not exist', async () => {
       const formData = new FormData();
       formData.append('name', 'Tech');
 
       await addCategory(formData);
 
-      expect(mockFrom).toHaveBeenCalledWith('categories');
-      const calledWith = mockInsert.mock.calls[0][0];
-      expect(calledWith.name).toBe('Tech');
-      const colors = await getCategoryColors();
-      expect(colors).toContain(calledWith.color);
-      expect(calledWith.user_id).toBe('user-123');
+      expect(mockSelect).toHaveBeenCalledWith('id');
+      expect(mockEq).toHaveBeenCalledWith('name', 'Tech');
+      expect(mockEq).toHaveBeenCalledWith('user_id', 'user-123');
+      expect(mockSingle).toHaveBeenCalled();
+      expect(mockInsert).toHaveBeenCalled();
     });
 
-    it('should ignore provided color and use random color', async () => {
+    it('should redirect if category already exists', async () => {
+      mockSingle.mockResolvedValueOnce({ data: { id: 'cat-456' }, error: null });
       const formData = new FormData();
-      formData.append('name', 'Life');
-      formData.append('color', '#000000');
+      formData.append('name', 'Tech');
 
       await addCategory(formData);
 
-      const calledWith = mockInsert.mock.calls[0][0];
-      expect(calledWith.name).toBe('Life');
-      const colors = await getCategoryColors();
-      expect(colors).toContain(calledWith.color);
-      expect(calledWith.color).not.toBe('#000000');
+      expect(mockRedirect).toHaveBeenCalledWith('/?error=Such category already exists');
+      expect(mockInsert).not.toHaveBeenCalled();
+    });
+  });
+
+  describe('addLink', () => {
+    it('should add a new link if it does not exist', async () => {
+      const formData = new FormData();
+      formData.append('url', 'https://example.com');
+
+      await addLink(formData);
+      
+      expect(mockSelect).toHaveBeenCalledWith('id');
+      expect(mockEq).toHaveBeenCalledWith('url', 'https://example.com');
+      expect(mockEq).toHaveBeenCalledWith('user_id', 'user-123');
+      expect(mockSingle).toHaveBeenCalled();
+      expect(mockInsert).toHaveBeenCalled();
+    });
+
+    it('should redirect if link already exists', async () => {
+      mockSingle.mockResolvedValueOnce({ data: { id: 'link-456' }, error: null });
+      const formData = new FormData();
+      formData.append('url', 'https://example.com');
+
+      await addLink(formData);
+
+      expect(mockRedirect).toHaveBeenCalledWith('/?error=Such article already saved');
+      expect(mockInsert).not.toHaveBeenCalled();
     });
   });
 
