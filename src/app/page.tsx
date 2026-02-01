@@ -154,7 +154,7 @@ export default async function Dashboard(props: {
                                     <div className="min-w-0 flex-1">
                                         <a href={link.url} target="_blank" rel="noopener noreferrer" className="block focus:outline-none group">
                                             <h3 className="truncate text-base font-semibold leading-6 text-gray-900 group-hover:text-indigo-600">
-                                                {link.title || link.url}
+                                                {link.title ? link.title.slice(0, 90) : link.url}
                                             </h3>
                                             <p className="mt-1 truncate text-sm text-gray-500">{link.url}</p>
                                         </a>
