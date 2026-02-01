@@ -10,6 +10,7 @@ export default async function Dashboard(props: {
 }) {
   const searchParams = await props.searchParams
   const supabase = await createClient()
+  const error = typeof searchParams.error === 'string' ? searchParams.error : undefined
 
   // Verify user
   const { data: { user } } = await supabase.auth.getUser()
