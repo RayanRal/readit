@@ -40,7 +40,7 @@ export default async function Dashboard(props: {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <Suspense><ErrorMessage /></Suspense>
+      <Suspense><ErrorMessage key={error} error={error} /></Suspense>
       <nav className="bg-white shadow-sm sticky top-0 z-10">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 justify-between items-center">

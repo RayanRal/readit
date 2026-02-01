@@ -39,12 +39,16 @@ export async function addLink(formData: FormData) {
       return
   }
 
-  const { data: existingLink } = await supabase
+  const { data: existingLink, error: existingLinkError } = await supabase
       .from('links')
       .select('id')
       .eq('url', url)
       .eq('user_id', user.id)
-      .single()
+      .maybeSingle()
+
+  if (existingLinkError) {
+      console.error('Error checking for existing link:', existingLinkError)
+  }
 
   if (existingLink) {
       return redirect('/?error=Such article already saved')
